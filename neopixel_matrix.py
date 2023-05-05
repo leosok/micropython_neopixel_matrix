@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # NeoPixel Matrix for MicroPython
-# Use 
+# Used with ESP32 and 8x32 WS2812b LED matrix
 # neopixel_matrix.py
 
 import machine
 import neopixel
 import framebuf
 import time
+import random
 
 class Color:
     RED = (255, 0, 0)

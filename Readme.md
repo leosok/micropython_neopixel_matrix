@@ -23,8 +23,9 @@ Here is an example of how to use the `NeoPixelMatrix` module:
 ```python
 from neopixel_matrix import NeoPixelMatrix, Color
 
-# create a NeoPixelMatrix instance
-matrix = NeoPixelMatrix(pin=5, width=16, height=8)
+# create a NeoPixelMatrix instance 
+PIN = 23 #Your Pin
+matrix = NeoPixelMatrix(pin=5, width=32, height=8, direction=HORIZONTAL)
 
 # set the brightness of the matrix
 matrix.brightness = 0.5

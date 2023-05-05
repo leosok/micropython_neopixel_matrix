@@ -54,7 +54,7 @@ while True:
             n[counter] = (pval, 0, 0)
             counter += 1
         n.write()
-        print()
+        #print()
     counter = 0
 
     # Scroll the frame buffer and update the starting position of the text
@@ -65,4 +65,4 @@ while True:
         text_x = DISPLAY_WIDTH - 1  # Reset the text starting position
     draw_text_to_fbuf(TEXT, text_x)
 
-    machine.sleep(100)
+    #machine.sleep(10)

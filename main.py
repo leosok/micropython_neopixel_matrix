@@ -1,40 +1,61 @@
 import neopixel
 import machine
-import framebuf
-
-import random
-# 32 LED strip connected to X8.
-p = machine.Pin(23, machine.Pin.OUT)
-n = neopixel.NeoPixel(p, 256)
+from neopixels_matrix import NeoPixelMatrix, MockNeoPixelMatrix
+from neopixels_matrix import Color
 
 
-n.fill((0,0,0))
-n.write()
+def test_neopixel_matrix():
+    #from neopixel_matrix import NeoPixelMatrix
+
+    # Configure the pin number, width, and height
+    DATA_PIN = 23  # GPIO5 on ESP8266, change this to the pin you have connected to the Neopixels
+    WIDTH = 32
+    HEIGHT = 8
+    DIRECTION = NeoPixelMatrix.HORIZONTAL
+    SLEEP_TIME = 1000
 
 
-# FrameBuffer needs 2 bytes for every RGB565 pixel
-buffer = bytearray(100 * 10 * 2)
-fbuf = framebuf.FrameBuffer(buffer, 32, 8, framebuf.MVLSB)
+    matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT, direction=DIRECTION)
 
 
-DISPLAY_WIDTH = 32
-DISPLAY_HEIGHT = 8
+    # # Fill the entire matrix with a single color
+    # matrix.fill((255, 0, 0))  # Red
+    # matrix.show()
+    # machine.lightsleep(SLEEP_TIME)
 
-counter = 0
-fbuf.text('HOT', 5, 1, 1)
+    # # Clear the matrix
+    # matrix.clear()
 
-for w in reversed(range(DISPLAY_WIDTH)):
-    for h in reversed(range(DISPLAY_HEIGHT)):
-        # if we are in a even line, we need to go backwards
-        if w % 2 == 0:
-            pixel = fbuf.pixel(w, (7 - h)) or 0
-        else:
-            pixel = fbuf.pixel(w, h) or 0
-        pval = (pixel * 20)
-        n[counter] = (pval, 0, 0)
-        print(h if pixel == 1 else ' ', end=' ')
-        counter += 1
-    n.write()
-    print()
+    # Clear the matrix
+    import time
+    matrix.clear()
 
-#---------------------
+    # Draw static text
+    matrix.text("1 Hello", 0, 0, (255, 255, 255))
+    time.sleep(1)
+
+
+    # Draw and scroll a long text
+    light_red = Color.light_color(Color.RED, 0.1)
+    matrix.text("Hello, world...", 0, 0, light_red) 
+    matrix.scroll(0.02)
+
+
+    # Clear the matrix
+    # matrix.clear()
+
+def test_neopixel_matrix_mock(text, x, y, color):
+    print("test_neopixel_matrix_mock")
+    mock_matrix = MockNeoPixelMatrix(32, 8, direction=NeoPixelMatrix.HORIZONTAL)
+    mock_matrix.text(text, x, y, color)
+    mock_matrix.show()
+    
+    
+
+
+
+if __name__ == '__main__': 
+    test_neopixel_matrix()
+
+
+    #test_neopixel_matrix_mock("Hello!", 0, 0, (255, 255, 255))  # White

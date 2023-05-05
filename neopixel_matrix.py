@@ -8,6 +8,7 @@ import neopixel
 import framebuf
 import time
 import random
+from timed_func import timed_function
 
 class Color:
     RED = (255, 0, 0)
@@ -74,24 +75,61 @@ class NeoPixelMatrix:
         char_width, char_height = 8, 8  # Assuming each character is 8x8 pixels
         return len(string) * char_width
 
-    # TODO: remove dx dy
-    def _update_np_from_fb(self, dx=0, dy=0):
-        counter = 0
-        for w in reversed(range(self.width)):
-            if w % 2 == 0:
-                for h in reversed(range(self.height)):
-                    x, y = self._transform_coordinates(w, h)
-                    rgb565 = self.fb.pixel(x + dx, y + dy)
-                    self.np[counter] = self._rgb565_to_rgb888(rgb565)
-                    counter += 1
-            else:
-                for h in range(self.height):
-                    x, y = self._transform_coordinates(w, h)
-                    rgb565 = self.fb.pixel(x + dx, y + dy)
-                    self.np[counter] = self._rgb565_to_rgb888(rgb565)
-                    counter += 1
+    def _center_text(self, string):
+        text_width = self._get_text_width(string)
+        if text_width > self.width:
+            raise ValueError("Text is too long to be centered on the screen.")
+        return (self.width - text_width) // 2
 
-   
+    
+    # @timed_function
+    # def _update_np_from_fb(self):
+    #     counter = 0  # NeoPixel index counter
+
+    #     # Loop through each column of the matrix in reverse order
+    #     for w in reversed(range(self.width)):
+    #         # Determine the row iteration order based on whether the column is even or odd
+    #         if w % 2 == 0:
+    #             row_order = reversed(range(self.height))
+    #         else:
+    #             row_order = range(self.height)
+
+    #         # Loop through each row based on the determined order
+    #         for h in row_order:
+    #             # Transform the coordinates based on the matrix direction
+    #             x, y = self._transform_coordinates(w, h)
+
+    #             # Get the pixel value from the framebuffer at the transformed coordinates
+    #             rgb565 = self.fb.pixel(x, y)
+
+    #             # Convert the pixel value from RGB565 to RGB888 and set it in the NeoPixel buffer
+    #             self.np[counter] = self._rgb565_to_rgb888(rgb565)
+
+    #             # Increment the NeoPixel index counter
+    #             counter += 1
+
+    @timed_function
+    def _update_np_from_fb(self):
+        counter = 0
+        self.np.fill((0, 0, 0))
+        for w in reversed(range(self.width)):
+            # Determine the row iteration order based on whether the column is even or odd
+            if w % 2 == 0:
+                row_order = reversed(range(self.height))
+            else:
+                row_order = range(self.height)
+
+            for h in row_order:
+                x, y = self._transform_coordinates(w, h)
+                rgb565 = self.fb.pixel(x, y)
+                r, g, b = self._rgb565_to_rgb888(rgb565)
+                
+                # Only update non-black pixels
+                if r != 0 or g != 0 or b != 0:
+                    self.np[counter] = r, g, b
+
+                counter += 1
+    
 
     def _draw_text_to_buffer(self, string, x, y, color, buffer):
         r, g, b = color
@@ -113,9 +151,12 @@ class NeoPixelMatrix:
         self.show()
 
 
-    def text(self, string, x, y, color):
+    def text(self, string, x, y, color, center=False):
         text_width = self._get_text_width(string)
         fb_width = max(text_width, self.width)
+
+        if center:
+            x = self._center_text(string)
 
         # Update the framebuffer size if its width doesn't match the calculated width
         if self.fb_width != fb_width:
@@ -126,15 +167,7 @@ class NeoPixelMatrix:
         self._draw_text_to_buffer(string, x, y, color, self.fb)
         self.show()
 
-
-    # def scroll(self, delay=0.1):
-    #     fb_width = self.fb_width
-    #     for i in range(fb_width - self.width + 1):
-    #         print(f"i: {i}")
-    #         self._update_np_from_fb(i, 0)
-    #         self.show()
-    #         time.sleep(delay)
-
+    @timed_function
     def scroll(self, delay=0.1, scroll_out=True):
         fb_width = self.fb_width
         if scroll_out:

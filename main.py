@@ -1,7 +1,7 @@
 import neopixel
 import machine
-from neopixels_matrix import NeoPixelMatrix, MockNeoPixelMatrix
-from neopixels_matrix import Color
+from neopixel_matrix import NeoPixelMatrix, MockNeoPixelMatrix
+from neopixel_matrix import Color
 
 
 def test_neopixel_matrix():
@@ -31,14 +31,17 @@ def test_neopixel_matrix():
     matrix.clear()
 
     # Draw static text
+    light_red = Color.light_color(Color.WHITE, 0.3)
     matrix.text("1 Hello", 0, 0, (255, 255, 255))
-    time.sleep(1)
+    time.sleep(2)
 
+    matrix.text("HOT", 0, 0, Color.GREEN, center=True)
+    time.sleep(2)
 
     # Draw and scroll a long text
     light_red = Color.light_color(Color.RED, 0.1)
     matrix.text("Hello, world...", 0, 0, light_red) 
-    matrix.scroll(0.02)
+    matrix.scroll(0)
 
 
     # Clear the matrix

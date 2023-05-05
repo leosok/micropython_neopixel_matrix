@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # NeoPixel Matrix for MicroPython
-# neo_matrix.py
+# Use 
+# neopixel_matrix.py
 
 import machine
 import neopixel
@@ -72,6 +73,7 @@ class NeoPixelMatrix:
         char_width, char_height = 8, 8  # Assuming each character is 8x8 pixels
         return len(string) * char_width
 
+    # TODO: remove dx dy
     def _update_np_from_fb(self, dx=0, dy=0):
         counter = 0
         for w in reversed(range(self.width)):

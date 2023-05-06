@@ -3,6 +3,7 @@
 # Used with ESP32 and 8x32 WS2812b LED matrix
 # neopixel_matrix.py
 
+import gc
 import machine
 import neopixel
 import framebuf
@@ -34,7 +35,7 @@ class NeoPixelMatrix:
     VERTICAL = 1
 
     
-    def __init__(self, pin, width, height, direction=HORIZONTAL, brightness=1.0):
+    def __init__(self, pin, width, height, direction=HORIZONTAL, brightness=1.0, bg_color=Color.BLACK):
         self.width = width
         self.height = height
     
@@ -45,6 +46,7 @@ class NeoPixelMatrix:
        
         self.direction = direction
         self.brightness = max(0, min(1, brightness))  # Ensure the brightness value is within the range [0, 1]
+        self.bg_color = bg_color
 
 
     def _transform_coordinates(self, x, y):
@@ -78,40 +80,16 @@ class NeoPixelMatrix:
     def _center_text(self, string):
         text_width = self._get_text_width(string)
         if text_width > self.width:
-            raise ValueError("Text is too long to be centered on the screen.")
+            print("ATTENTION: Text is too long to be centered on the screen.")
+            return 0
         return (self.width - text_width) // 2
 
-    
-    # @timed_function
-    # def _update_np_from_fb(self):
-    #     counter = 0  # NeoPixel index counter
-
-    #     # Loop through each column of the matrix in reverse order
-    #     for w in reversed(range(self.width)):
-    #         # Determine the row iteration order based on whether the column is even or odd
-    #         if w % 2 == 0:
-    #             row_order = reversed(range(self.height))
-    #         else:
-    #             row_order = range(self.height)
-
-    #         # Loop through each row based on the determined order
-    #         for h in row_order:
-    #             # Transform the coordinates based on the matrix direction
-    #             x, y = self._transform_coordinates(w, h)
-
-    #             # Get the pixel value from the framebuffer at the transformed coordinates
-    #             rgb565 = self.fb.pixel(x, y)
-
-    #             # Convert the pixel value from RGB565 to RGB888 and set it in the NeoPixel buffer
-    #             self.np[counter] = self._rgb565_to_rgb888(rgb565)
-
-    #             # Increment the NeoPixel index counter
-    #             counter += 1
 
     @timed_function
     def _update_np_from_fb(self):
+        gc.collect()
         counter = 0
-        self.np.fill((0, 0, 0))
+        self.np.fill(self.bg_color)
         for w in reversed(range(self.width)):
             # Determine the row iteration order based on whether the column is even or odd
             if w % 2 == 0:
@@ -122,11 +100,11 @@ class NeoPixelMatrix:
             for h in row_order:
                 x, y = self._transform_coordinates(w, h)
                 rgb565 = self.fb.pixel(x, y)
-                r, g, b = self._rgb565_to_rgb888(rgb565)
+                rgb888_pixel = self._rgb565_to_rgb888(rgb565)
                 
-                # Only update non-black pixels
-                if r != 0 or g != 0 or b != 0:
-                    self.np[counter] = r, g, b
+                # Only update non-bg-color pixels; makes the display update faster
+                if rgb888_pixel != self.bg_color:
+                    self.np[counter] = rgb888_pixel
 
                 counter += 1
     
@@ -135,6 +113,13 @@ class NeoPixelMatrix:
         r, g, b = color
         rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
         buffer.text(string, x, y, rgb565)
+
+    
+    def _update_framebuffer_size(self, fb_width):
+        if self.fb_width != fb_width:
+            self.fb = framebuf.FrameBuffer(bytearray(fb_width * self.height * 2), fb_width, self.height, framebuf.RGB565)
+            self.fb_width = fb_width
+
 
 
     def fill(self, color):
@@ -147,11 +132,11 @@ class NeoPixelMatrix:
         self.np.write()
 
     def clear(self):
-        self.fill((0, 0, 0))
+        self.fill(self.bg_color)
         self.show()
 
 
-    def text(self, string, x, y, color, center=False):
+    def text(self, string, x=0, y=0, color=Color.RED, center=False):
         text_width = self._get_text_width(string)
         fb_width = max(text_width, self.width)
 
@@ -159,11 +144,9 @@ class NeoPixelMatrix:
             x = self._center_text(string)
 
         # Update the framebuffer size if its width doesn't match the calculated width
-        if self.fb_width != fb_width:
-            self.fb = framebuf.FrameBuffer(bytearray(fb_width * self.height * 2), fb_width, self.height, framebuf.RGB565)
-            self.fb_width = fb_width
+        self._update_framebuffer_size(fb_width)
 
-        self.fill((0, 0, 0))  # Clear the framebuffer before drawing new text
+        self.fill(self.bg_color)  # Clear the framebuffer before drawing new text
         self._draw_text_to_buffer(string, x, y, color, self.fb)
         self.show()
 
@@ -179,22 +162,3 @@ class NeoPixelMatrix:
             self.show()
             time.sleep(delay)
 
-class MockNeoPixelMatrix(NeoPixelMatrix):
-    def __init__(self, width, height, direction=NeoPixelMatrix.HORIZONTAL):
-        self.width = width
-        self.height = height
-        self.direction = direction
-        self.fb = framebuf.FrameBuffer(bytearray(width * height * 2), width, height, framebuf.RGB565)
-
-    def show(self):
-        self._update_np_from_fb()
-        for y in range(self.height):
-            row = ''
-            for x in range(self.width):
-                # index = x + y * self.width
-                r, g, b = self._rgb565_to_rgb888(self.fb.pixel(x, y))
-                if r > 127 or g > 127 or b > 127:
-                    row += '#'
-                else:
-                    row += '.'
-            print(row)

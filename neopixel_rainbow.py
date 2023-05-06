@@ -2,6 +2,7 @@
 
 import machine
 import neopixel
+import time
 
 class Rainbow:
     """
@@ -51,9 +52,9 @@ class Rainbow:
 
     def fill(self):
         for color in self.generate_rainbow():
-            pixels.fill(color)
-            pixels.write()
-            machine.lightsleep(self.sleep_ms)
+            self.pixels.fill(color)
+            self.pixels.write()
+            time.sleep(self.sleep_ms/1000)
 
 
 if __name__ == '__main__':

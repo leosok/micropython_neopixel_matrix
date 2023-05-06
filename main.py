@@ -92,7 +92,6 @@ def test_async():
             )
 
 
-
     async def real_scroll():
         await matrix.scroll_text("Toaster heating.", delay=0.00)
         await matrix.scroll_text("Happy Toasting!", delay=0)
@@ -134,7 +133,7 @@ def test_mock_neopixel_matrix():
         await matrix.scroll_text(
             "Hello, World!",
             color=Color.YELLOW,
-            delay=0.5,
+            delay=0.07,
             scroll_in=True,
             scroll_out=True
         )
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     test_mock_neopixel_matrix()
     #test_async()
 
-    # test_neopixel_matrix()
+    #test_neopixel_matrix()
 
 
     #test_neopixel_matrix_mock("Hello!", 0, 0, (255, 255, 255))  # White

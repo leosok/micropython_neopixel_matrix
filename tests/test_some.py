@@ -12,25 +12,25 @@ DIRECTION = NeoPixelMatrix.HORIZONTAL
 SLEEP_TIME = 0
 BRIGHTNESS= 0.4
 
-matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT, direction=DIRECTION, brightness=BRIGHTNESS)
+# matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT, direction=DIRECTION, brightness=BRIGHTNESS)
 
 
-def test_np_mock_async():
-    async def run():
-        matrix = MockNeoPixelMatrixAsync(WIDTH, HEIGHT)
+# def test_mock_neopixel_matrix_async():
+#     async def run():
+#         matrix = MockNeoPixelMatrixAsync(WIDTH, HEIGHT)
 
-        await matrix.text("Hallo Welt!", 0, 0, Color.WHITE)
-        await asyncio.sleep(2)
+#         matrix.text("Hallo Welt!", 0, 0, Color.WHITE)
+#         await asyncio.sleep(2)
 
-        await matrix.scroll_text(
-            "Hello, World!",
-            color=Color.YELLOW,
-            delay=0.07,
-            scroll_in=True,
-            scroll_out=True
-        )
+#         matrix.scroll_text(
+#             "Hello, World!",
+#             color=Color.YELLOW,
+#             delay=0.07,
+#             scroll_in=True,
+#             scroll_out=True
+#         )
     
-    asyncio.run(run())
+#     asyncio.run(run())
 
 
 
@@ -88,15 +88,17 @@ def test_neopixel_matrix():
     matrix.text("HOT", center=True)
     time.sleep(1)
 
-def test_neopixel_matrix_mock(text, x, y, color):
+def test_mock_neopixel_matrix():
     print("test_neopixel_matrix_mock")
     mock_matrix = MockNeoPixelMatrix(32, 8, direction=NeoPixelMatrix.HORIZONTAL)
-    mock_matrix.text(text, x, y, color)
+    mock_matrix.text("Hallo", 0, 0, Color.RED)
     mock_matrix.show()
+    time.sleep(1)
+    mock_matrix.scroll_text("Hello from Berlin")
     
 
 def run_tests():
     test_neopixel_matrix()
     test_async()
     test_progress()
-    test_np_mock_async()
+    test_mock_neopixel_matrix()

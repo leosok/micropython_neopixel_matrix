@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # NeoPixel Matrix for MicroPython
 # Used with ESP32 and 8x32 WS2812b LED matrix
-# neopixel_matrix.py
+# neopixel_matrix_async.py
 
 from neopixel_matrix import NeoPixelMatrix, Color
 import uasyncio as asyncio
@@ -31,6 +31,5 @@ class NeoPixelMatrixAsync(NeoPixelMatrix):
             string, x=x, y=y, color=color, scroll_in=scroll_in, scroll_out=scroll_out)
         for _ in range(scroll_range):
             self.fb.scroll(-1, 0)
-            for _ in range(scroll_range):
-                await self.show()
-                await asyncio.sleep(delay)
+            await self.show()
+            await asyncio.sleep(delay)

@@ -10,7 +10,7 @@ import neopixel
 import framebuf
 import time
 import random
-from timed_func import time_acc_function, timed_function
+#from utils.timed_func import time_acc_function, timed_function
 
 
 class Color:
@@ -98,7 +98,7 @@ class NeoPixelMatrix:
             return 0
         return (self.width - text_width) // 2
 
-    # @timed_function
+    #@timed_function
     def _update_np_from_fb(self):
         """
         Update the NeoPixel matrix with the current contents of the framebuffer.
@@ -201,6 +201,7 @@ class NeoPixelMatrix:
 
         return scroll_range
 
+
     def scroll_text(self, string, x=0, y=0, color=Color.RED, delay=0.07, scroll_in=True, scroll_out=True):
         """
         Scroll the given text on the NeoPixel matrix with the specified parameters.
@@ -217,10 +218,9 @@ class NeoPixelMatrix:
         Usage:
             np_matrix.scroll_text("Hello, world!", color=Color.GREEN, delay=0.1, scroll_in=True, scroll_out=True)
         """
-        scroll_range = scroll_range = self._get_scroll_text_range(
+        scroll_range = self._get_scroll_text_range(
             string, x=x, y=y, color=color, scroll_in=scroll_in, scroll_out=scroll_out)
         for _ in range(scroll_range):
             self.fb.scroll(-1, 0)
-            for _ in range(scroll_range):
-                self.show()
-                time.sleep(delay)
+            self.show()
+            time.sleep(delay)

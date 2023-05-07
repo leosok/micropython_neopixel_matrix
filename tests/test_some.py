@@ -1,3 +1,4 @@
+import time
 from neopixel_matrix_mock import MockNeoPixelMatrix, MockNeoPixelMatrixAsync
 from neopixel_matrix import Color, NeoPixelMatrix
 from neopixel_matrix_async import NeoPixelMatrixAsync
@@ -85,6 +86,7 @@ def test_progress():
 def test_neopixel_matrix():
     matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT)
     matrix.text("HOT", center=True)
+    time.sleep(1)
 
 def test_neopixel_matrix_mock(text, x, y, color):
     print("test_neopixel_matrix_mock")

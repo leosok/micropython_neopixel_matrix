@@ -184,7 +184,7 @@ class NeoPixelMatrix:
 
         # Clear the framebuffer before drawing new text
         self.fill(self.bg_color)
-        self._draw_text_to_buffer(string, x, y + 1 , color, self.fb)
+        self._draw_text_to_buffer(string, x, y , color, self.fb)
         self.show()
 
 

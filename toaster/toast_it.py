@@ -38,7 +38,14 @@ async def toast_display():
     await matrix.scroll_text("Happy Toasting!", delay=0)
     await matrix.scroll_text("Heating.", delay=0.01)
     while elapsed_time() < HEATING_TIME:
-        await matrix.draw_progress_bar(progress=elapsed_time(), max_progress=80, color=Color.GREEN)
+       
+        progress_color = Color.GREEN
+        if elapsed_time() > 25:
+            progress_color = (255,180,0) # Yellow on my machine
+        elif elapsed_time() > 60:
+            progress_color = Color.RED
+
+        await matrix.draw_progress_bar(progress=elapsed_time(), max_progress=80, color=progress_color)
         await asyncio.sleep(
             random.randint(2,10)
             )

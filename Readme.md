@@ -36,6 +36,7 @@ The `NeoPixelMatrix` module is a simple library to display text and graphics on 
 - 🔄 ~~Support for both horizontal and vertical LED matrices~~ [Badly impemented]
 - 🌈 Predefined color constants and helper functions
 - ⏱️ Async support for non-blocking matrix control
+- 📊 Display progress bars
 
 ## Installation
 
@@ -107,6 +108,21 @@ np_matrix = NeoPixelMatrix(pin, width, height, direction=HORIZONTAL, brightness=
         ```
 
         In this example, the text "Hello, world!" will scroll in from the right edge of the matrix with a delay of 0.1 seconds between each scrolling step. The text will be displayed in green and will continue scrolling until it exits the left edge of the matrix.  
+
+ - `draw_progress_bar(progress, max_progress, color=Color.RED, margin=2, height=4)`: Draw a progress bar on the NeoPixel matrix.
+    - `progress` (int): The current progress value.
+    - `max_progress` (int): The maximum progress value.
+    - `color` (tuple): The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
+    - `margin` (int): The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
+    - `height` (int): The height (in pixels) of the progress bar. Default is 4.
+
+      Example usage:
+
+        ```python
+        matrix = NeoPixelMatrix(pin=5, width=32, height=8)
+        matrix.draw_progress_bar(50, 100, color=Color.GREEN)
+        ```
+
 
 - `fill(color)`: Fill the entire matrix with the specified color.
 

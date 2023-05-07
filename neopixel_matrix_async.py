@@ -22,6 +22,10 @@ class NeoPixelMatrixAsync(NeoPixelMatrix):
         await self._update_np_from_fb()
         self.np.write()
 
+    async def clear(self):
+        self.fill(self.bg_color)
+        await self.show()
+
     async def text(self, string, x=0, y=0, color=Color.RED, center=False):
         super().text(string, x, y, color, center)
         await self.show()
@@ -33,3 +37,9 @@ class NeoPixelMatrixAsync(NeoPixelMatrix):
             self.fb.scroll(-1, 0)
             await self.show()
             await asyncio.sleep(delay)
+
+    async def draw_progress_bar(self, progress, max_progress, color=Color.RED, margin=2, height=4):
+        super().draw_progress_bar(progress, max_progress, color, margin, height)
+        await self.show()
+
+

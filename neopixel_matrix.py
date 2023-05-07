@@ -87,6 +87,21 @@ class NeoPixelMatrix:
 
         return r, g, b
 
+    @staticmethod
+    def rgb_to_rgb565(rgb):
+        """
+        Convert a 24-bit RGB888 color to a 16-bit RGB565 color.
+
+        Args:
+            rgb (tuple): The RGB color value as a tuple (r, g, b).
+
+        Returns:
+            int: The 16-bit RGB565 color value.
+        """
+        r, g, b = rgb
+        return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+
+
     def _get_text_width(self, string):
         char_width, char_height = 8, 8  # Assuming each character is 8x8 pixels
         return len(string) * char_width
@@ -169,7 +184,7 @@ class NeoPixelMatrix:
 
         # Clear the framebuffer before drawing new text
         self.fill(self.bg_color)
-        self._draw_text_to_buffer(string, x, y, color, self.fb)
+        self._draw_text_to_buffer(string, x, y + 1 , color, self.fb)
         self.show()
 
 
@@ -224,3 +239,29 @@ class NeoPixelMatrix:
             self.fb.scroll(-1, 0)
             self.show()
             time.sleep(delay)
+            
+    
+    def draw_progress_bar(self, progress, max_progress, color=Color.RED, margin=2, height=4):
+        """
+        Draw a progress bar on the NeoPixel matrix.
+
+        Parameters:
+        - progress (int): The current progress value.
+        - max_progress (int): The maximum progress value.
+        - color (tuple): The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
+        - margin (int): The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
+        - height (int): The height (in pixels) of the progress bar. Default is 4.
+
+        Example:
+            matrix = NeoPixelMatrix(pin=5, width=32, height=8)
+            matrix.draw_progress_bar(50, 100, color=Color.GREEN)
+        """
+        #self._get_progress_bar(progress, max_progress, margin, height, color)
+        max_width = self.width - (2*margin)
+        step = max_width / max_progress
+        current_width = round(step * progress)
+
+        self.clear()
+        self.fb.fill_rect(2,margin,current_width, height, self.rgb_to_rgb565(color))
+        self.fb.rect(2,margin,max_width, height, self.rgb_to_rgb565(color))
+        self.show()

@@ -2,6 +2,9 @@
 
 The `NeoPixelMatrix` module is a simple library to display text and graphics on a NeoPixel LED matrix using MicroPython. This module provides an easy way to control the LED matrix, including scrolling text, setting colors, and adjusting the brightness. This library was specifically written for an 8x32 WS2812b Matrix and has been tested on ESP32.
 
+Here's a video of the features:
+
+[![Video Tutorial](https://img.youtube.com/vi/OTWfCaKkqZk/0.jpg)](https://www.youtube.com/watch?v=OTWfCaKkqZk)
 
 ## Table of Contents
 

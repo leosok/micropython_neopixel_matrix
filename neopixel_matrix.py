@@ -261,7 +261,7 @@ class NeoPixelMatrix:
         step = max_width / max_progress
         current_width = round(step * progress)
 
-        self.clear()
+        self.fill(self.bg_color) # clear does flickering
         self.fb.fill_rect(2,margin,current_width, height, self.rgb_to_rgb565(color))
         self.fb.rect(2,margin,max_width, height, self.rgb_to_rgb565(color))
         self.show()

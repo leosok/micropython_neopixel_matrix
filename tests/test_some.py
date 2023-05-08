@@ -44,17 +44,17 @@ def test_async():
 
        
         await matrix.scroll_text(
-            "Hi from Berlin",
+            "Hi:)",
             color=Color.RED, 
             delay=SLEEP_TIME, 
             scroll_in=True, 
             scroll_out=False
             )
 
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
 
         await matrix.scroll_text(
-            "I scroll out of sight.",
+            "I scroll out.",
             color=Color.RED, 
             delay=SLEEP_TIME, 
             scroll_in=True, 
@@ -71,9 +71,11 @@ def test_progress():
     async def run():
         matrix = NeoPixelMatrixAsync(23 ,32, 8)
         await matrix.draw_progress_bar(progress=40, max_progress=80)
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         matrix1 = NeoPixelMatrix(23 ,32, 8)
-        matrix1.draw_progress_bar(progress=40, max_progress=80, color=Color.GREEN)
+        for i in range (1,100, 5):
+            matrix1.draw_progress_bar(progress=i, max_progress=100, color=Color.GREEN)
+            await asyncio.sleep(0.2)
         await asyncio.sleep(1)
         await matrix.clear()
 
@@ -81,19 +83,19 @@ def test_progress():
 
 
 
-
-
 def test_neopixel_matrix():
     matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT)
+    matrix.clear()
+    time.sleep(2)
     matrix.text("HOT", center=True)
-    time.sleep(1)
+    time.sleep(2)
 
 def test_mock_neopixel_matrix():
     print("test_neopixel_matrix_mock")
     mock_matrix = MockNeoPixelMatrix(32, 8, direction=NeoPixelMatrix.HORIZONTAL)
     mock_matrix.text("Hallo", 0, 0, Color.RED)
     mock_matrix.show()
-    time.sleep(1)
+    time.sleep(2)
     mock_matrix.scroll_text("Hello from Berlin")
     
 

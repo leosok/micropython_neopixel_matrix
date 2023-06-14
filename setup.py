@@ -6,7 +6,7 @@ setup(
     description="NeoPixel Matrix library for MicroPython. Used with WS2812b Matrix.",
     author="Leonid Sokolov",
     author_email="leosok@gmx.de",
-    url="https://github.com/yourusername/micropython_neopixel_matrix",
+    url="https://github.com/leosok/micropython_neopixel_matrix",
     packages=["micropython_neopixel_matrix"],
     install_requires=["micropython", "micropython-uasyncio"],
     classifiers=[

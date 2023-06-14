@@ -1,7 +1,7 @@
 import time
-from neopixel_matrix_mock import MockNeoPixelMatrix, MockNeoPixelMatrixAsync
-from neopixel_matrix import Color, NeoPixelMatrix
-from neopixel_matrix_async import NeoPixelMatrixAsync
+from micropython_neopixel_matrix.neopixel_matrix_mock import MockNeoPixelMatrix
+from micropython_neopixel_matrix.neopixel_matrix import Color, NeoPixelMatrix
+from micropython_neopixel_matrix.neopixel_matrix_async import NeoPixelMatrixAsync
 import uasyncio as asyncio
 import random
 
@@ -11,26 +11,6 @@ HEIGHT = 8
 DIRECTION = NeoPixelMatrix.HORIZONTAL
 SLEEP_TIME = 0
 BRIGHTNESS= 0.4
-
-# matrix = NeoPixelMatrix(DATA_PIN, WIDTH, HEIGHT, direction=DIRECTION, brightness=BRIGHTNESS)
-
-
-# def test_mock_neopixel_matrix_async():
-#     async def run():
-#         matrix = MockNeoPixelMatrixAsync(WIDTH, HEIGHT)
-
-#         matrix.text("Hallo Welt!", 0, 0, Color.WHITE)
-#         await asyncio.sleep(2)
-
-#         matrix.scroll_text(
-#             "Hello, World!",
-#             color=Color.YELLOW,
-#             delay=0.07,
-#             scroll_in=True,
-#             scroll_out=True
-#         )
-    
-#     asyncio.run(run())
 
 
 

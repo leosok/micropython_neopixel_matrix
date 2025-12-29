@@ -3,6 +3,15 @@
 # Used with ESP32 and 8x32 WS2812b LED matrix
 # neopixel_matrix.py
 
+
+# Fixes by L7:
+#   - Specified argument- and return Types
+#   - Now using the `NeoPixelMatrix.rgb_to_rgb565` function everywhere
+#   - added the `NeoPixelMatrix.line` and `NeoPixelMatrix.rect` functions
+#   - added a "refresh" argument to `NeoPixelMatrix.clear()` and replaced some `NeoPixelMatrix.fill(self.bg_color)` calls with `NeoPixelMatrix.clear(refresh=False)`
+#   - added the `NeoPixelMatrix.manual_refresh`: setting it to True makes all "drawing functions" not call `NeoPixelMatrix.show()` (except for `NeoPixelMatrix.scroll_text()`), allowing for drawing without "screen" updates
+#   - added more colours (I found them useful for the project I was working on, but feel free to remove them!)
+
 import gc
 import utime
 import machine
@@ -23,6 +32,11 @@ class Color:
     MAGENTA = (255, 0, 255)
     BLACK = (0, 0, 0)
 
+    PINK = (245, 168, 186)
+    AQUA = (85, 255, 255)
+    ORANGE = (255, 140, 0)
+    PURPLE = (140, 0, 140)
+
     @staticmethod
     def random():
         return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -36,7 +50,7 @@ class NeoPixelMatrix:
     HORIZONTAL = 0
     VERTICAL = 1
 
-    def __init__(self, pin, width, height, direction=HORIZONTAL, brightness=1.0, bg_color=Color.BLACK):
+    def __init__(self, pin:int, width:int, height:int, direction:int=HORIZONTAL, brightness:float=1.0, bg_color:tuple=Color.BLACK) -> None:
         self.width = width
         self.height = height
 
@@ -51,7 +65,9 @@ class NeoPixelMatrix:
         self.brightness = max(0, min(1, brightness))
         self.bg_color = bg_color
 
-    def _transform_coordinates(self, x, y):
+        self.manual_refresh = False
+
+    def _transform_coordinates(self, x:int, y:int) -> tuple: # Doesnt work for me: it just flips everything on it's head
         """
         Transform the given x and y coordinates according to the matrix direction.
         """
@@ -62,7 +78,7 @@ class NeoPixelMatrix:
             y = self.height - 1 - y
         return x, y
 
-    def _rgb565_to_rgb888(self, color):
+    def _rgb565_to_rgb888(self, color:int) -> tuple:
         """
         Convert a 16-bit RGB565 color to a 24-bit RGB888 color and apply brightness.
 
@@ -88,13 +104,13 @@ class NeoPixelMatrix:
         return r, g, b
 
     @staticmethod
-    def rgb_to_rgb565(rgb):
+    def rgb_to_rgb565(rgb:tuple) -> int:
         """
         Convert a 24-bit RGB888 color to a 16-bit RGB565 color.
-
+    
         Args:
             rgb (tuple): The RGB color value as a tuple (r, g, b).
-
+    
         Returns:
             int: The 16-bit RGB565 color value.
         """
@@ -102,11 +118,11 @@ class NeoPixelMatrix:
         return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
 
 
-    def _get_text_width(self, string):
+    def _get_text_width(self, string:str) -> int:
         char_width, char_height = 8, 8  # Assuming each character is 8x8 pixels
         return len(string) * char_width
 
-    def _center_text(self, string):
+    def _center_text(self, string:str) -> int:
         text_width = self._get_text_width(string)
         if text_width > self.width:
             print("ATTENTION: Text is too long to be centered on the screen.")
@@ -114,7 +130,7 @@ class NeoPixelMatrix:
         return (self.width - text_width) // 2
 
     #@timed_function
-    def _update_np_from_fb(self):
+    def _update_np_from_fb(self) -> None:
         """
         Update the NeoPixel matrix with the current contents of the framebuffer.
         
@@ -142,15 +158,13 @@ class NeoPixelMatrix:
 
                 counter += 1
 
-    def _draw_text_to_buffer(self, string, x, y, color, buffer):
+    def _draw_text_to_buffer(self, string:str, x:int, y:int, color:tuple, buffer) -> None:
         """
         Draw the given text string to the specified buffer at the given x and y coordinates.
         """
-        r, g, b = color
-        rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
-        buffer.text(string, x, y, rgb565)
+        buffer.text(string, x, y, self.rgb_to_rgb565(color))
 
-    def _update_framebuffer_size(self, fb_width):
+    def _update_framebuffer_size(self, fb_width:int) -> None:
         """
         Update the framebuffer size if the given width is different from the current framebuffer width.
         """
@@ -159,20 +173,32 @@ class NeoPixelMatrix:
                 bytearray(fb_width * self.height * 2), fb_width, self.height, framebuf.RGB565)
             self.fb_width = fb_width
 
-    def fill(self, color):
-        r, g, b = color
-        rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
-        self.fb.fill(rgb565)
+    def fill(self, color:tuple) -> None:
+        self.fb.fill(self.rgb_to_rgb565(color))
 
-    def show(self):
+    def line(self, pos1: tuple, pos2: tuple, color: tuple) -> None:
+        """Please input pos1 & pos2 as tuple(x: int, y: int) - L7"""
+
+        self.fb.line(pos1[0], pos1[1], pos2[0], pos2[1], self.rgb_to_rgb565(color))
+        if not self.manual_refresh: self.show()
+
+    def rect(self, pos1: tuple, pos2: tuple, color: tuple, fill:bool=True) -> None:
+        """Please input pos1 & pos2 as tuple(x: int, y: int) - L7"""
+        self.rgb_to_rgb565(color)
+        self.fb.poly(0,0, bytearray([pos1[0],pos1[1], pos2[0],pos1[1], pos2[0],pos2[1], pos1[0],pos2[1]]), self.rgb_to_rgb565(color), fill)
+
+        if not self.manual_refresh: self.show()
+
+    def show(self) -> None:
         self._update_np_from_fb()
         self.np.write()
 
-    def clear(self):
+    def clear(self, refresh: bool = True) -> None:
         self.fill(self.bg_color)
-        self.show()
+        if refresh and not self.manual_refresh:
+            self.show()
 
-    def text(self, string, x=0, y=0, color=Color.RED, center=False):
+    def text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, center:bool=False) -> None:
         text_width = self._get_text_width(string)
         fb_width = max(text_width, self.width)
 
@@ -183,12 +209,12 @@ class NeoPixelMatrix:
         self._update_framebuffer_size(fb_width)
 
         # Clear the framebuffer before drawing new text
-        self.fill(self.bg_color)
+        self.clear(refresh=False)
         self._draw_text_to_buffer(string, x, y , color, self.fb)
-        self.show()
+        if not self.manual_refresh: self.show()
 
 
-    def _get_scroll_text_range(self, string, x, y, color, scroll_in, scroll_out):
+    def _get_scroll_text_range(self, string:str, x:int, y:int, color:tuple, scroll_in:bool, scroll_out:bool) -> int:
         """
         Calculate and return the framebuffer width, starting x-coordinate, and scroll range
         for scrolling the given text on the NeoPixel matrix.
@@ -207,7 +233,7 @@ class NeoPixelMatrix:
 
         self._update_framebuffer_size(fb_width)
 
-        self.fill(self.bg_color)
+        self.clear(refresh=False)
         self._draw_text_to_buffer(string, x, y, color, self.fb)
 
         scroll_range = fb_width - self.width  # will stop at the left of the matrix
@@ -217,7 +243,7 @@ class NeoPixelMatrix:
         return scroll_range
 
 
-    def scroll_text(self, string, x=0, y=0, color=Color.RED, delay=0.07, scroll_in=True, scroll_out=True):
+    def scroll_text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, delay:float=0.07, scroll_in:bool=True, scroll_out:bool=True) -> None:
         """
         Scroll the given text on the NeoPixel matrix with the specified parameters.
 
@@ -241,7 +267,7 @@ class NeoPixelMatrix:
             time.sleep(delay)
             
     
-    def draw_progress_bar(self, progress, max_progress, color=Color.RED, margin=2, height=4):
+    def draw_progress_bar(self, progress:int, max_progress:int, color:tuple=Color.RED, margin:int=2, height:int=4) -> None:
         """
         Draw a progress bar on the NeoPixel matrix.
 
@@ -261,7 +287,9 @@ class NeoPixelMatrix:
         step = max_width / max_progress
         current_width = round(step * progress)
 
-        self.fill(self.bg_color) # clear does flickering
+        #self.fill(self.bg_color) # clear does flickering       # -- because of the .show() call! - L7
+        # Fix:
+        self.clear(refresh=False)
         self.fb.fill_rect(2,margin,current_width, height, self.rgb_to_rgb565(color))
         self.fb.rect(2,margin,max_width, height, self.rgb_to_rgb565(color))
-        self.show()
+        if not self.manual_refresh: self.show()

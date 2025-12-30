@@ -281,6 +281,8 @@ class NeoPixelMatrix:
             - scroll_out   : bool:  If True, the text will scroll out to the left edge of the matrix.
 
         Return values:
+            - fb_width     : int:   The framebuffer width
+            - starting_x   : int:   The starting x-coordinate
             - scroll_range : int:   The range of pixels for which the text will be scrolled.
         """
 
@@ -288,7 +290,7 @@ class NeoPixelMatrix:
 
         if scroll_in:
             fb_width = text_width + self.width  # all text outside the FB
-            x = fb_width - text_width  # start at the right edge
+            starting_x = fb_width - text_width  # start at the right edge
         else:
             fb_width = max(text_width, self.width)
 
@@ -296,7 +298,7 @@ class NeoPixelMatrix:
         if scroll_out:
             scroll_range += self.width  # will go on to get out to the left
 
-        return scroll_range
+        return fb_width, starting_x, scroll_range
 
 
     def scroll_text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, delay:float=0.07, scroll_in:bool=True, scroll_out:bool=True) -> None:
@@ -316,13 +318,15 @@ class NeoPixelMatrix:
         Example:
             np_matrix.scroll_text("Hello, world!", color=Color.GREEN, delay=0.1, scroll_in=True, scroll_out=True)
         """
+        fb_width, starting_x, scroll_range = self._get_scroll_text_range(
+            string=string, x=x, y=y, scroll_in=scroll_in, scroll_out=scroll_out
+        )
+
         self._update_framebuffer_size(fb_width)
 
         self.clear(refresh=False)
-        self._draw_text_to_buffer(string, x, y, color, self.fb)
+        self._draw_text_to_buffer(string, starting_x, y, color, self.fb)
 
-        scroll_range = self._get_scroll_text_range(
-            string=string, x=x, y=y, scroll_in=scroll_in, scroll_out=scroll_out)
         for _ in range(scroll_range):
             self.fb.scroll(-1, 0)
             self.show()

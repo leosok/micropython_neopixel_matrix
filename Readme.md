@@ -97,8 +97,8 @@ np_matrix.clear()
 for y in range(np_matrix.height*4):
   np_matrix.line(pos1=(0, y%np_matrix.height), pos2=(32, y%np_matrix.height), color=Color.random())
 
-np_matrix.clear()
 time.sleep(1)
+np_matrix.clear(refresh=False) # this will clear the framebuffer, but won't update the Matrix
 
 # Sometimes you don't want to go line by line, but refresh everything all at once.
 # By setting manual_refresh to True, you will have to call np_matrix.show() yourself.
@@ -107,9 +107,9 @@ np_matrix.manual_refresh = True
 for y in range(np_matrix.height*4):
   np_matrix.line(pos1=(0, y%np_matrix.height), pos2=(32, y%np_matrix.height), color=Color.random())
 np_matrix.show() # only update the actual LED matrix now
+
+time.sleep(3)
 np_matrix.manual_refresh = False # Remember to reset everything to the way it was before
-
-
 
 # Clear the matrix (again)
 np_matrix.clear()
@@ -129,7 +129,7 @@ np_matrix = NeoPixelMatrix(pin, width, height, direction=HORIZONTAL, brightness=
 - `pin` (int): The GPIO pin connected to the data pin of the NeoPixel matrix.
 - `width` (int): The width of the NeoPixel matrix.
 - `height` (int): The height of the NeoPixel matrix.
-- `direction` (int, optional): The direction of the LED matrix. Use `NeoPixelMatrix.HORIZONTAL` for horizontal matrices or `NeoPixelMatrix.VERTICAL` for vertical matrices. Defaults to `NeoPixelMatrix.HORIZONTAL`.
+- `direction` (int, optional): The direction of the LED matrix. Use `NeoPixelMatrix.HORIZONTAL` for horizontal matrices or `NeoPixelMatrix.VERTICAL` for vertical matrices. Defaults to `NeoPixelMatrix.HORIZONTAL`. **Currently broken!**
 - `brightness` (float, optional): The initial brightness of the matrix (0 to 1). Defaults to 1.0.
 - `bg_color` (tuple, optional): The background color of the matrix as an RGB tuple. Defaults to `Color.BLACK`.
 

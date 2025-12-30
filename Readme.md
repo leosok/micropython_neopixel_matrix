@@ -201,19 +201,19 @@ The `Color` class provides constants and helper functions for working with color
 
 #### Constants
 
-| Color Sample | Constant | RGB values |
-|--------------|----------|----------- |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 0, 0);"></span>     | `RED`     | `(255, 0, 0)`     |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 255, 0);"></span>     | `GREEN`   | `(0, 255, 0)`     |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 0, 255);"></span>     | `BLUE`    | `(0, 0, 255)`     |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 255, 255);"></span>   | `CYAN`    | `(0, 255, 255)`   |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 255, 0);"></span>   | `YELLOW`  | `(255, 255, 0)`   |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 140, 0);"></span>   | `ORANGE`  | `(255, 140, 0)`   |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(245, 168, 186);"></span> | `PINK`    | `(245, 168, 186)` |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 0, 255);"></span>   | `MAGENTA` | `(255, 0, 255)`   |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(140, 0, 140);"></span>   | `PURPLE`  | `(140, 0, 140)`   |
-| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 255, 255);"></span> | `WHITE`   | `(255, 255, 255)` |
-| (LED off)                                                                                                      | `BLACK`   | `(0, 0, 0)`       |
+| Color Sample                                              | Constant  | RGB values        |
+|:---------------------------------------------------------:|:---------:|:-----------------:|
+| ![RED](https://placehold.co/110x20/ff0000/ff0000.png)     | `RED`     | `(255, 0, 0)`     |
+| ![GREEN](https://placehold.co/110x20/00ff00/00ff00.png)   | `GREEN`   | `(0, 255, 0)`     |
+| ![BLUE](https://placehold.co/110x20/0000ff/0000ff.png)    | `BLUE`    | `(0, 0, 255)`     |
+| ![CYAN](https://placehold.co/110x20/00ffff/00ffff.png)    | `CYAN`    | `(0, 255, 255)`   |
+| ![YELLOW](https://placehold.co/110x20/ffff00/ffff00.png)  | `YELLOW`  | `(255, 255, 0)`   |
+| ![ORANGE](https://placehold.co/110x20/ff8c00/ff8c00.png)  | `ORANGE`  | `(255, 140, 0)`   |
+| ![PINK](https://placehold.co/110x20/f5a8ba/f5a8ba.png)    | `PINK`    | `(245, 168, 186)` |
+| ![MAGENTA](https://placehold.co/110x20/ff00ff/ff00ff.png) | `MAGENTA` | `(255, 0, 255)`   |
+| ![PURPLE](https://placehold.co/110x20/8c008c/8c008c.png)  | `PURPLE`  | `(140, 0, 140)`   |
+| ![WHITE](https://placehold.co/110x20/ffffff/ffffff.png)   | `WHITE`   | `(255, 255, 255)` |
+| (LED off)                                                 | `BLACK`   | `(0, 0, 0)`       |
 
 #### Methods
 

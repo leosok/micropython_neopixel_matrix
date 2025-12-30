@@ -3,15 +3,6 @@
 # Used with ESP32 and 8x32 WS2812b LED matrix
 # neopixel_matrix.py
 
-
-# Fixes by L7:
-#   - Specified argument- and return Types
-#   - Now using the `NeoPixelMatrix.rgb_to_rgb565` function everywhere
-#   - added the `NeoPixelMatrix.line` and `NeoPixelMatrix.rect` functions
-#   - added a "refresh" argument to `NeoPixelMatrix.clear()` and replaced some `NeoPixelMatrix.fill(self.bg_color)` calls with `NeoPixelMatrix.clear(refresh=False)`
-#   - added the `NeoPixelMatrix.manual_refresh`: setting it to True makes all "drawing functions" not call `NeoPixelMatrix.show()` (except for `NeoPixelMatrix.scroll_text()`), allowing for drawing without "screen" updates
-#   - added more colours (I found them useful for the project I was working on, but feel free to remove them!)
-
 import gc
 import utime
 import machine
@@ -33,7 +24,6 @@ class Color:
     BLACK = (0, 0, 0)
 
     PINK = (245, 168, 186)
-    AQUA = (85, 255, 255)
     ORANGE = (255, 140, 0)
     PURPLE = (140, 0, 140)
 
@@ -45,6 +35,63 @@ class Color:
     def light_color(color, brightness_factor):
         return tuple(int(x * brightness_factor) for x in color)
 
+    @staticmethod
+    def hex_to_rgb(hex_string: str) -> tuple:
+        """
+        Convert a RGB888 hex string into a 24-bit RGB888 color, represented as a tuple.
+
+        Arguments:
+            - hex_string : str:    The RGB888 hex string
+
+        Return value:
+            - rgb        : tuple:  The RGB888 color value as a tuple
+        """
+        hex_string_cleaned = hex_string.replace('#', '')
+
+        r = int(hex_string_cleaned[0]+hex_string_cleaned[1], 16)
+        g = int(hex_string_cleaned[2]+hex_string_cleaned[3], 16)
+        b = int(hex_string_cleaned[4]+hex_string_cleaned[5], 16)
+
+        return (r, g, b)
+
+    @staticmethod
+    def rgb_to_rgb565(rgb:tuple) -> int:
+        """
+        Convert a 24-bit RGB888 color to a 16-bit RGB565 color.
+    
+        Arguments:
+            - rgb    : tuple:  The RGB color value as a tuple (r, g, b).
+    
+        Return value:
+            - rgb565 : int:    The 16-bit RGB565 color value.
+        """
+        r, g, b = rgb
+        return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+
+    def rgb565_to_rgb888(self, color:int) -> tuple:
+        """
+        Convert a 16-bit RGB565 color to a 24-bit RGB888 color and apply brightness.
+
+        Arguments:
+            - color : int:    The RGB565 color value.
+
+        Return value:
+            - rgb   : tuple:  The RGB888 color value after brightness adjustment.
+        """
+        if color is None:
+            return 0, 0, 0
+
+        # convert 16-bit RGB565 to 24-bit RGB888
+        r = ((color >> 11) & 0x1F) << 3
+        g = ((color >> 5) & 0x3F) << 2
+        b = (color & 0x1F) << 3
+
+        # apply brightness
+        r = int(r * self.brightness)
+        g = int(g * self.brightness)
+        b = int(b * self.brightness)
+
+        return r, g, b
 
 class NeoPixelMatrix:
     HORIZONTAL = 0
@@ -78,46 +125,6 @@ class NeoPixelMatrix:
             y = self.height - 1 - y
         return x, y
 
-    def _rgb565_to_rgb888(self, color:int) -> tuple:
-        """
-        Convert a 16-bit RGB565 color to a 24-bit RGB888 color and apply brightness.
-
-        Args:
-            color (int): The RGB565 color value.
-
-        Returns:
-            tuple: The RGB888 color value after brightness adjustment.
-        """
-        if color is None:
-            return 0, 0, 0
-
-        # convert 16-bit RGB565 to 24-bit RGB888
-        r = ((color >> 11) & 0x1F) << 3
-        g = ((color >> 5) & 0x3F) << 2
-        b = (color & 0x1F) << 3
-
-        # apply brightness
-        r = int(r * self.brightness)
-        g = int(g * self.brightness)
-        b = int(b * self.brightness)
-
-        return r, g, b
-
-    @staticmethod
-    def rgb_to_rgb565(rgb:tuple) -> int:
-        """
-        Convert a 24-bit RGB888 color to a 16-bit RGB565 color.
-    
-        Args:
-            rgb (tuple): The RGB color value as a tuple (r, g, b).
-    
-        Returns:
-            int: The 16-bit RGB565 color value.
-        """
-        r, g, b = rgb
-        return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-
-
     def _get_text_width(self, string:str) -> int:
         char_width, char_height = 8, 8  # Assuming each character is 8x8 pixels
         return len(string) * char_width
@@ -150,7 +157,7 @@ class NeoPixelMatrix:
             for h in row_order:
                 x, y = self._transform_coordinates(w, h)
                 rgb565 = self.fb.pixel(x, y)
-                rgb888_pixel = self._rgb565_to_rgb888(rgb565)
+                rgb888_pixel = Color.rgb565_to_rgb888(rgb565)
 
                 # Only update non-bg-color pixels; makes the display update faster
                 if rgb888_pixel != self.bg_color:
@@ -162,7 +169,7 @@ class NeoPixelMatrix:
         """
         Draw the given text string to the specified buffer at the given x and y coordinates.
         """
-        buffer.text(string, x, y, self.rgb_to_rgb565(color))
+        buffer.text(string, x, y, Color.rgb_to_rgb565(color))
 
     def _update_framebuffer_size(self, fb_width:int) -> None:
         """
@@ -174,31 +181,71 @@ class NeoPixelMatrix:
             self.fb_width = fb_width
 
     def fill(self, color:tuple) -> None:
-        self.fb.fill(self.rgb_to_rgb565(color))
+        """
+        Fill the NeoPixel matrix with a color, but ***don't*** call `NeoPixelMatrix.show()`; Please do that yourself!
 
-    def line(self, pos1: tuple, pos2: tuple, color: tuple) -> None:
-        """Please input pos1 & pos2 as tuple(x: int, y: int) - L7"""
+        Arguments:
+            - color : tuple(r:int, g:int, b:int):  The color of the line in the RGB888 color format
+        """
+        self.fb.fill(Color.rgb_to_rgb565(color))
 
-        self.fb.line(pos1[0], pos1[1], pos2[0], pos2[1], self.rgb_to_rgb565(color))
+    def line(self, pos1: tuple[int, int], pos2: tuple[int, int], color: tuple=Color.RED) -> None:
+        """
+        Draw a line from pos1 to pos2 using the `FrameBuf.line()` function
+
+        Arguments:
+            - pos1  : tuple(x:int, y:int):         The start position of the line
+            - pos2  : tuple(x:int, y:int):         The end position of the line
+            (Optional:)
+            - color : tuple(r:int, g:int, b:int):  The color of the line, as an (R, G, B) tuple. Default is Color.RED.
+        """
+
+        self.fb.line(pos1[0], pos1[1], pos2[0], pos2[1], Color.rgb_to_rgb565(color))
         if not self.manual_refresh: self.show()
 
-    def rect(self, pos1: tuple, pos2: tuple, color: tuple, fill:bool=True) -> None:
-        """Please input pos1 & pos2 as tuple(x: int, y: int) - L7"""
-        self.rgb_to_rgb565(color)
-        self.fb.poly(0,0, bytearray([pos1[0],pos1[1], pos2[0],pos1[1], pos2[0],pos2[1], pos1[0],pos2[1]]), self.rgb_to_rgb565(color), fill)
+    def rect(self, pos1: tuple[int, int], pos2: tuple[int, int], color: tuple=Color.RED, fill:bool=True) -> None:
+        """
+        Draw a rectangle with the upper-left corner at pos1 and the lower-right corner at pos2.
+
+        Arguments:
+            - pos1  : tuple(x:int, y:int):         The upper-left corner of the rectangle
+            - pos2  : tuple(x:int, y:int):         The lower-right corner of the rectangle
+            (Optional:)
+            - color : tuple(r:int, g:int, b:int):  The color of the rectangle, as an (R, G, B) tuple. Default is Color.RED.
+            - fill  : bool:                        If True, the rectange will be filled with the given color; if False, only the outline will be drawn. Defaults to True.
+        """
+        Color.rgb_to_rgb565(color)
+        self.fb.poly(0,0, bytearray([pos1[0],pos1[1], pos2[0],pos1[1], pos2[0],pos2[1], pos1[0],pos2[1]]), Color.rgb_to_rgb565(color), fill)
 
         if not self.manual_refresh: self.show()
 
     def show(self) -> None:
+        """
+        Update the NeoPixel matrix with the current contents of the framebuffer.
+        """
         self._update_np_from_fb()
         self.np.write()
 
     def clear(self, refresh: bool = True) -> None:
+        """
+        Clear the NeoPixel matrix by setting all pixels to the background color.
+        """
         self.fill(self.bg_color)
         if refresh and not self.manual_refresh:
             self.show()
 
     def text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, center:bool=False) -> None:
+        """
+        Display a given Text on the NeoPixel matrix.
+
+        Arguments:
+            - string : str: The text to display
+            (Optional:)
+            - x      : int:                         The x-coordinate of the top-left corner of the Text on the matrix. Defaults to 0.
+            - y      : int:                         The y-coordinate of the top-left corner of the Text on the matrix. Defaults to 0.
+            - color  : tuple(r:int, g:int, b:int):  The RGB color of the text. Defaults to Color.RED.
+            - center : bool:                        If True, the text will be centered on the matrix. Defaults to False.
+        """
         text_width = self._get_text_width(string)
         fb_width = max(text_width, self.width)
 
@@ -214,13 +261,20 @@ class NeoPixelMatrix:
         if not self.manual_refresh: self.show()
 
 
-    def _get_scroll_text_range(self, string:str, x:int, y:int, color:tuple, scroll_in:bool, scroll_out:bool) -> int:
+    def _get_scroll_text_range(self, string:str, x:int, y:int, scroll_in:bool, scroll_out:bool) -> int:
         """
         Calculate and return the framebuffer width, starting x-coordinate, and scroll range
         for scrolling the given text on the NeoPixel matrix.
 
-        Returns:
-                - scroll_range (int): The range of pixels for which the text will be scrolled.
+        Arguments:
+            - string       : str:   The text to get the scroll range from
+            - x            : int:   The initial x-coordinate of the text in the matrix.
+            - y            : int:   The initial y-coordinate of the text in the matrix.
+            - scroll_in    : bool:  If True, the text will scroll in from the right edge of the matrix.
+            - scroll_out   : bool:  If True, the text will scroll out to the left edge of the matrix.
+
+        Return values:
+            - scroll_range : int:   The range of pixels for which the text will be scrolled.
         """
 
         text_width = self._get_text_width(string)
@@ -230,11 +284,6 @@ class NeoPixelMatrix:
             x = fb_width - text_width  # start at the right edge
         else:
             fb_width = max(text_width, self.width)
-
-        self._update_framebuffer_size(fb_width)
-
-        self.clear(refresh=False)
-        self._draw_text_to_buffer(string, x, y, color, self.fb)
 
         scroll_range = fb_width - self.width  # will stop at the left of the matrix
         if scroll_out:
@@ -247,20 +296,26 @@ class NeoPixelMatrix:
         """
         Scroll the given text on the NeoPixel matrix with the specified parameters.
 
-        Args:
-            string (str): The text string to be scrolled.
-            x (int, optional): The initial x-coordinate of the text in the matrix. Defaults to 0.
-            y (int, optional): The initial y-coordinate of the text in the matrix. Defaults to 0.
-            color (tuple, optional): The RGB color of the text. Defaults to Color.RED.
-            delay (float, optional): The time delay (in seconds) between each scrolling step. Defaults to 0.07.
-            scroll_in (bool, optional): If True, the text will scroll in from the right edge of the matrix. Defaults to True.
-            scroll_out (bool, optional): If True, the text will scroll out to the left edge of the matrix. Defaults to True.
+        Arguments:
+            - string     : str:                         The text string to be scrolled.
+            (Optional:)
+            - x          : int:                         The initial x-coordinate of the text in the matrix. Defaults to 0.
+            - y          : int:                         The initial y-coordinate of the text in the matrix. Defaults to 0.
+            - color      : tuple(r:int, g:int, b:int):  The RGB color of the text. Defaults to Color.RED.
+            - delay      : float:                       The time delay (in seconds) between each scrolling step. Defaults to 0.07.
+            - scroll_in  : bool:                        If True, the text will scroll in from the right edge of the matrix. Defaults to True.
+            - scroll_out : bool:                        If True, the text will scroll out to the left edge of the matrix. Defaults to True.
 
-        Usage:
+        Example:
             np_matrix.scroll_text("Hello, world!", color=Color.GREEN, delay=0.1, scroll_in=True, scroll_out=True)
         """
+        self._update_framebuffer_size(fb_width)
+
+        self.clear(refresh=False)
+        self._draw_text_to_buffer(string, x, y, color, self.fb)
+
         scroll_range = self._get_scroll_text_range(
-            string, x=x, y=y, color=color, scroll_in=scroll_in, scroll_out=scroll_out)
+            string=string, x=x, y=y, scroll_in=scroll_in, scroll_out=scroll_out)
         for _ in range(scroll_range):
             self.fb.scroll(-1, 0)
             self.show()
@@ -271,12 +326,13 @@ class NeoPixelMatrix:
         """
         Draw a progress bar on the NeoPixel matrix.
 
-        Parameters:
-        - progress (int): The current progress value.
-        - max_progress (int): The maximum progress value.
-        - color (tuple): The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
-        - margin (int): The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
-        - height (int): The height (in pixels) of the progress bar. Default is 4.
+        Arguments:
+            - progress     : int:                         The current progress value.
+            - max_progress : int:                         The maximum progress value.
+            (Optional:)
+            - color        : tuple(r:int, g:int, b:int):  The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
+            - margin       : int:                         The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
+            - height       : int:                         The height (in pixels) of the progress bar. Default is 4.
 
         Example:
             matrix = NeoPixelMatrix(pin=5, width=32, height=8)
@@ -287,9 +343,7 @@ class NeoPixelMatrix:
         step = max_width / max_progress
         current_width = round(step * progress)
 
-        #self.fill(self.bg_color) # clear does flickering       # -- because of the .show() call! - L7
-        # Fix:
         self.clear(refresh=False)
-        self.fb.fill_rect(2,margin,current_width, height, self.rgb_to_rgb565(color))
-        self.fb.rect(2,margin,max_width, height, self.rgb_to_rgb565(color))
+        self.fb.fill_rect(2,margin,current_width, height, Color.rgb_to_rgb565(color))
+        self.fb.rect(2,margin,max_width, height, Color.rgb_to_rgb565(color))
         if not self.manual_refresh: self.show()

@@ -19,11 +19,10 @@ Here's a video of the features:
       - [Methods](#methods)
     - [Color](#color)
       - [Constants](#constants)
-      - [`random()`](#random)
-      - [`light_color(color, brightness_factor)`](#light_colorcolor-brightness_factor)
+      - [Methods](#methods-1)
   - [NeoPixelMatrixAsync](#neopixelmatrixasync)
     - [Initialization](#initialization-1)
-    - [Methods](#methods-1)
+    - [Methods](#methods-2)
     - [Example Usage](#example-usage)
   - [MockNeoPixelMatrix](#mockneopixelmatrix)
     - [Initialization](#initialization-2)
@@ -43,18 +42,31 @@ Here's a video of the features:
 
 ## Installation
 
+### Using the files
+
 To use the `NeoPixelMatrix` module, simply copy the `neopixel_matrix.py` and `neopixel_matrix_async.py` files to your MicroPython board. If you don't have a matrix attatched, you can use `neopixel_matrix_mock.py` to get an idea of your text in the console.
+
+**Note**: by intalling the library like this, you will have to use the following import:
+
+```python
+from neopixel_matrix import NeoPixelMatrix, Color
+# Note the missing `micropython_neopixel_matrix` namespace!
+```
+
+### Installing as a Module
+
+To install the `NeoPixelMatrix` as it's own module, simply copy the `micropython_neopixel_matrix` sub-directory into the root directory of your project / to your MicroPython board (or any other place accessible by your MicroPython script).
 
 ## Usage
 
 Here is an example of how to use the `NeoPixelMatrix` module:
 
 ```python
-from neopixel_matrix import NeoPixelMatrix, Color
+from micropython_neopixel_matrix.neopixel_matrix import NeoPixelMatrix, Color # or without the `micropython_neopixel_matrix` namespace, if you are using the files directly
 import time
 
 # Initialize the NeoPixel matrix
-PIN = 23
+PIN = 23 # Replace with whatever pin you are using in your setup
 np_matrix = NeoPixelMatrix(pin=PIN, width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 
 # Display text on the matrix
@@ -92,17 +104,23 @@ np_matrix = NeoPixelMatrix(pin, width, height, direction=HORIZONTAL, brightness=
 
 #### Methods
 
-- `text(string, x=0, y=0, color=Color.RED, center=False)`: Display the given text on the NeoPixel matrix.
+- `text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, center:bool=False)`: Display a given Text on the NeoPixel matrix.
+    - `string` : str: The text to display
+    **(Optional:)**
+    - `x`      : int:                         The x-coordinate of the top-left corner of the Text on the matrix. Defaults to 0.
+    - `y`      : int:                         The y-coordinate of the top-left corner of the Text on the matrix. Defaults to 0.
+    - `color`  : tuple(r:int, g:int, b:int):  The RGB color of the text. Defaults to Color.RED.
+    - `center` : bool:                        If True, the text will be centered on the matrix. Defaults to False.
 
-- `scroll_text(string, x=0, y=0, color=Color.RED, delay=0.07, scroll_in=True, scroll_out=True)`:   
-  Scroll the given text on the NeoPixel matrix with the specified parameters.
-    - `string` (str): The text string to be scrolled.
-    - `x` (int, optional): The initial x-coordinate of the text in the matrix. Defaults to 0.
-    - `y` (int, optional): The initial y-coordinate of the text in the matrix. Defaults to 0.
-    - `color` (tuple, optional): The RGB color of the text. Defaults to Color.RED.
-    - `delay` (float, optional): The time delay (in seconds) between each scrolling step. Defaults to 0.07.
-    - `scroll_in` (bool, optional): If True, the text will scroll in from the right edge of the matrix. If False, the text will begin at the specified x-coordinate (0 by default). Defaults to True.
-    - `scroll_out` (bool, optional): If True, the text will continue scrolling until it exits the left edge of the matrix. If False, the text will stop scrolling once its right edge reaches the left edge of the matrix. Defaults to True.
+- `scroll_text(self, string:str, x:int=0, y:int=0, color:tuple=Color.RED, delay:float=0.07, scroll_in:bool=True, scroll_out:bool=True)`: Scroll the given text on the NeoPixel matrix with the specified parameters.
+    - `string`     : str:                         The text string to be scrolled.
+    **(Optional:)**
+    - `x`          : int:                         The initial x-coordinate of the text in the matrix. Defaults to 0.
+    - `y`          : int:                         The initial y-coordinate of the text in the matrix. Defaults to 0.
+    - `color`      : tuple(r:int, g:int, b:int):  The RGB color of the text. Defaults to Color.RED.
+    - `delay`      : float:                       The time delay (in seconds) between each scrolling step. Defaults to 0.07.
+    - `scroll_in`  : bool:                        If True, the text will scroll in from the right edge of the matrix. Defaults to True.
+    - `scroll_out` : bool:                        If True, the text will scroll out to the left edge of the matrix. Defaults to True.
 
         Example usage:
 
@@ -110,28 +128,40 @@ np_matrix = NeoPixelMatrix(pin, width, height, direction=HORIZONTAL, brightness=
         np_matrix.scroll_text("Hello, world!", color=Color.GREEN, delay=0.1, scroll_in=True, scroll_out=True)
         ```
 
-        In this example, the text "Hello, world!" will scroll in from the right edge of the matrix with a delay of 0.1 seconds between each scrolling step. The text will be displayed in green and will continue scrolling until it exits the left edge of the matrix.  
+ - `draw_progress_bar(progress:int, max_progress:int, color:tuple=Color.RED, margin:int=2, height:int=4)`: Draw a progress bar on the NeoPixel matrix.
+    - `progress`     : int:                         The current progress value.
+    - `max_progress` : int:                         The maximum progress value.
+    **(Optional:)**
+    - `color`        : tuple(r:int, g:int, b:int):  The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
+    - `margin`       : int:                         The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
+    -` height`       : int:                         The height (in pixels) of the progress bar. Default is 4.
 
- - `draw_progress_bar(progress, max_progress, color=Color.RED, margin=2, height=4)`: Draw a progress bar on the NeoPixel matrix.
-    - `progress` (int): The current progress value.
-    - `max_progress` (int): The maximum progress value.
-    - `color` (tuple): The color of the progress bar, as an (R, G, B) tuple. Default is Color.RED.
-    - `margin` (int): The margin (in pixels) between the progress bar and the edge of the matrix. Default is 2.
-    - `height` (int): The height (in pixels) of the progress bar. Default is 4.
-
-      Example usage:
+        Example usage:
 
         ```python
         matrix = NeoPixelMatrix(pin=5, width=32, height=8)
         matrix.draw_progress_bar(50, 100, color=Color.GREEN)
         ```
 
+- `line(pos1: tuple[int, int], pos2: tuple[int, int], color: tuple)`: Draw a line from pos1 to pos2 using the `FrameBuf.line()` function.
+    - `pos1`  : tuple(x:int, y:int):         The start position of the line
+    - `pos2`  : tuple(x:int, y:int):         The end position of the line
+    **(Optional:)**
+    - `color` : tuple(r:int, g:int, b:int):  The color of the line, as an (R, G, B) tuple. Default is Color.RED.
+
+- `rect(pos1: tuple[int, int], pos2: tuple[int, int], color: tuple=Color.RED, fill:bool=True)`: Draw a rectangle with the upper-left corner at pos1 and the lower-right corner at pos2.
+    - `pos1`  : tuple(x:int, y:int):         The upper-left corner of the rectangle
+    - `pos2`  : tuple(x:int, y:int):         The lower-right corner of the rectangle
+    **(Optional:)**
+    - `color` : tuple(r:int, g:int, b:int):  The color of the rectangle, as an (R, G, B) tuple. Default is Color.RED.
+    - `fill`  : bool:                        If True, the rectange will be filled with the given color; if False, only the outline will be drawn. Defaults to True.
 
 - `fill(color)`: Fill the entire matrix with the specified color.
 
 - `show()`: Update the NeoPixel matrix with the current contents of the framebuffer.
 
-- `clear()`: Clear the NeoPixel matrix by setting all pixels to the background color.
+- `clear(refresh:bool=True)`: Clear the NeoPixel matrix by setting all pixels to the background color.
+    - `refresh` : bool:  If True, the function **wont** call `show()`, reducing the updates to the matrix and thus preventing some potential flickerring
 
 
 ### Color
@@ -140,27 +170,45 @@ The `Color` class provides constants and helper functions for working with color
 
 #### Constants
 
-- `RED`
-- `GREEN`
-- `BLUE`
-- `WHITE`
-- `YELLOW`
-- `CYAN`
-- `MAGENTA`
-- `BLACK`
+| Color Sample | Constant | RGB values |
+|--------------|----------|----------- |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 0, 0);"></span>     | `RED`     | `(255, 0, 0)`     |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 255, 0);"></span>     | `GREEN`   | `(0, 255, 0)`     |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 0, 255);"></span>     | `BLUE`    | `(0, 0, 255)`     |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(0, 255, 255);"></span>   | `CYAN`    | `(0, 255, 255)`   |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 255, 0);"></span>   | `YELLOW`  | `(255, 255, 0)`   |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 140, 0);"></span>   | `ORANGE`  | `(255, 140, 0)`   |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(245, 168, 186);"></span> | `PINK`    | `(245, 168, 186)` |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 0, 255);"></span>   | `MAGENTA` | `(255, 0, 255)`   |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(140, 0, 140);"></span>   | `PURPLE`  | `(140, 0, 140)`   |
+| <span style="display:inline-block; width: 50px; height: 20px; background-color: rgb(255, 255, 255);"></span> | `WHITE`   | `(255, 255, 255)` |
+| (LED off)                                                                                                      | `BLACK`   | `(0, 0, 0)`       |
 
-#### `random()`
+#### Methods
 
-Return a random color as an (R, G, B) tuple.
+- `random()`: Return a random color as an (R, G, B) tuple.
 
-#### `light_color(color, brightness_factor)`
+- `light_color(color, brightness_factor)`: Return a lighter version of the given color by multiplying its components by the specified brightness factor.
+    - `color`: The original color, as an (R, G, B) tuple.
+    - `brightness_factor`: The factor to multiply the color components by (a value between 0 and 1).
 
-Return a lighter version of the given color by multiplying its components by the specified brightness factor.
+- `hex_to_rgb(hex_string: str)`: Convert a rgb888 hex string into a 24-bit RGB888 color, represented as a tuple.
+    - `hex_string` : str:    The RGB888 hex string
 
-- `color`: The original color, as an (R, G, B) tuple.
-- `brightness_factor`: The factor to multiply the color components by (a value between 0 and 1).
+    Return value:
+    - `rgb`        : tuple:  The RGB888 color value as a tuple
 
+- `rgb_to_rgb565(rgb:tuple)`: Convert a 24-bit RGB888 color to a 16-bit RGB565 color.
+    - `rgb`    : tuple:  The RGB color value as a tuple (r, g, b).
 
+    Return value:
+    - `rgb565` : int:    The 16-bit RGB565 color value.
+
+- `rgb565_to_rgb888(self, color:int)`: Convert a 16-bit RGB565 color to a 24-bit RGB888 color and apply brightness.
+    - `color` : int:    The RGB565 color value.
+
+    Return value:
+    - `rgb`   : tuple:  The RGB888 color value after brightness adjustment.
 
 
 ## NeoPixelMatrixAsync
@@ -170,7 +218,7 @@ The `NeoPixelMatrixAsync` class is a subclass of the `NeoPixelMatrix` class, whi
 ### Initialization
 
 ```python
-from neopixel_matrix_async import NeoPixelMatrixAsync
+from micropython_neopixel_matrix.neopixel_matrix_async import NeoPixelMatrixAsync
 
 np_matrix_async = NeoPixelMatrixAsync(pin=18, width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 ```
@@ -187,7 +235,8 @@ np_matrix_async = NeoPixelMatrixAsync(pin=18, width=32, height=8, direction=NeoP
 
 ```python
 import uasyncio as asyncio
-from neopixel_matrix_async import NeoPixelMatrixAsync, Color
+from micropython_neopixel_matrix.neopixel_matrix_async import NeoPixelMatrixAsync
+from micropython_neopixel_matrix.neopixel_matrix import Color
 
 np_matrix_async = NeoPixelMatrixAsync(pin=23, width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 
@@ -207,7 +256,8 @@ The `MockNeoPixelMatrix` class is a subclass of the `NeoPixelMatrix` class that 
 ### Initialization
 
 ```python
-from neopixel_matrix import MockNeoPixelMatrix
+from micropython_neopixel_matrix.neopixel_matrix_mock import MockNeoPixelMatrix
+from micropython_neopixel_matrix.neopixel_matrix import Color
 
 mock_matrix = MockNeoPixelMatrix(width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 ```

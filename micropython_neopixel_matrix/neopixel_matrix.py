@@ -68,9 +68,10 @@ class Color:
         r, g, b = rgb
         return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
 
-    def rgb565_to_rgb888(self, color:int) -> tuple:
+    @staticmethod
+    def rgb565_to_rgb888(color:int) -> tuple:
         """
-        Convert a 16-bit RGB565 color to a 24-bit RGB888 color and apply brightness.
+        Convert a 16-bit RGB565 color to a 24-bit RGB888 color.
 
         Arguments:
             - color : int:    The RGB565 color value.
@@ -85,11 +86,6 @@ class Color:
         r = ((color >> 11) & 0x1F) << 3
         g = ((color >> 5) & 0x3F) << 2
         b = (color & 0x1F) << 3
-
-        # apply brightness
-        r = int(r * self.brightness)
-        g = int(g * self.brightness)
-        b = int(b * self.brightness)
 
         return r, g, b
 
@@ -157,7 +153,7 @@ class NeoPixelMatrix:
             for h in row_order:
                 x, y = self._transform_coordinates(w, h)
                 rgb565 = self.fb.pixel(x, y)
-                rgb888_pixel = Color.rgb565_to_rgb888(rgb565)
+                rgb888_pixel = self._apply_brightness(Color.rgb565_to_rgb888(rgb565))
 
                 # Only update non-bg-color pixels; makes the display update faster
                 if rgb888_pixel != self.bg_color:
@@ -179,6 +175,17 @@ class NeoPixelMatrix:
             self.fb = framebuf.FrameBuffer(
                 bytearray(fb_width * self.height * 2), fb_width, self.height, framebuf.RGB565)
             self.fb_width = fb_width
+
+    def _apply_brightness(self, color:tuple) -> tuple:
+        """
+        Apply brightness to the input color
+        """
+        r, g, b = color
+        r = int(r * self.brightness)
+        g = int(g * self.brightness)
+        b = int(b * self.brightness)
+
+        return (r, g, b)
 
     def fill(self, color:tuple) -> None:
         """

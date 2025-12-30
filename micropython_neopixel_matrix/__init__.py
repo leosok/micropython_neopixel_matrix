@@ -1,3 +1,3 @@
-from neopixel_matrix import Color, NeoPixelMatrix
-import neopixel_matrix_async
-import neopixel_matrix_mock
+from micropython_neopixel_matrix.neopixel_matrix import Color, NeoPixelMatrix
+import micropython_neopixel_matrix.neopixel_matrix_async
+import micropython_neopixel_matrix.neopixel_matrix_mock

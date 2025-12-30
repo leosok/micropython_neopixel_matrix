@@ -46,23 +46,28 @@ Here's a video of the features:
 
 To use the `NeoPixelMatrix` module, simply copy the `neopixel_matrix.py` and `neopixel_matrix_async.py` files to your MicroPython board. If you don't have a matrix attatched, you can use `neopixel_matrix_mock.py` to get an idea of your text in the console.
 
-**Note**: by intalling the library like this, you will have to use the following import:
-
-```python
-from neopixel_matrix import NeoPixelMatrix, Color
-# Note the missing `micropython_neopixel_matrix` namespace!
-```
+**Note**: This is the reccomended way of installing the project, as many Micro Controllers don't support more complex file structures, like the one needed in the next Method.
 
 ### Installing as a Module
 
 To install the `NeoPixelMatrix` as it's own module, simply copy the `micropython_neopixel_matrix` sub-directory into the root directory of your project / to your MicroPython board (or any other place accessible by your MicroPython script).
+
+**Note**: I have (only) tested this on the RPI Pico 2. (It does work on it)  
+But I don't have access to an ESP32 right now, so no guarantee the ESP32 supports this method  -- L7
+
+**Note 2**: by intalling the library like this, you will have to use the following import:
+
+```python
+from micropython_neopixel_matrix.neopixel_matrix import NeoPixelMatrix, Color
+# Note the added `micropython_neopixel_matrix` namespace!
+```
 
 ## Usage
 
 Here is an example of how to use the `NeoPixelMatrix` module:
 
 ```python
-from micropython_neopixel_matrix.neopixel_matrix import NeoPixelMatrix, Color # or without the `micropython_neopixel_matrix` namespace, if you are using the files directly
+from neopixel_matrix import NeoPixelMatrix, Color # or with the `micropython_neopixel_matrix` namespace, if you are using the library as a module
 import time
 
 # Initialize the NeoPixel matrix
@@ -81,6 +86,32 @@ np_matrix.fill(Color.BLUE)
 time.sleep(1)
 
 # Clear the matrix
+np_matrix.clear()
+
+
+### Tips and tricks ###
+
+## Manual refresh
+
+# This will, line by line, change the color of the led matrix
+for y in range(np_matrix.height*4):
+  np_matrix.line(pos1=(0, y%np_matrix.height), pos2=(32, y%np_matrix.height), color=Color.random())
+
+np_matrix.clear()
+time.sleep(1)
+
+# Sometimes you don't want to go line by line, but refresh everything all at once.
+# By setting manual_refresh to True, you will have to call np_matrix.show() yourself.
+# (This doesn't work with srolling text and the async NeoPixelMatrix class; those will behave as normal)
+np_matrix.manual_refresh = True
+for y in range(np_matrix.height*4):
+  np_matrix.line(pos1=(0, y%np_matrix.height), pos2=(32, y%np_matrix.height), color=Color.random())
+np_matrix.show() # only update the actual LED matrix now
+np_matrix.manual_refresh = False # Remember to reset everything to the way it was before
+
+
+
+# Clear the matrix (again)
 np_matrix.clear()
 ```
 
@@ -218,7 +249,7 @@ The `NeoPixelMatrixAsync` class is a subclass of the `NeoPixelMatrix` class, whi
 ### Initialization
 
 ```python
-from micropython_neopixel_matrix.neopixel_matrix_async import NeoPixelMatrixAsync
+from neopixel_matrix_async import NeoPixelMatrixAsync
 
 np_matrix_async = NeoPixelMatrixAsync(pin=18, width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 ```
@@ -235,8 +266,8 @@ np_matrix_async = NeoPixelMatrixAsync(pin=18, width=32, height=8, direction=NeoP
 
 ```python
 import uasyncio as asyncio
-from micropython_neopixel_matrix.neopixel_matrix_async import NeoPixelMatrixAsync
-from micropython_neopixel_matrix.neopixel_matrix import Color
+from neopixel_matrix_async import NeoPixelMatrixAsync
+from neopixel_matrix import Color
 
 np_matrix_async = NeoPixelMatrixAsync(pin=23, width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 
@@ -256,8 +287,8 @@ The `MockNeoPixelMatrix` class is a subclass of the `NeoPixelMatrix` class that 
 ### Initialization
 
 ```python
-from micropython_neopixel_matrix.neopixel_matrix_mock import MockNeoPixelMatrix
-from micropython_neopixel_matrix.neopixel_matrix import Color
+from neopixel_matrix_mock import MockNeoPixelMatrix
+from neopixel_matrix import Color
 
 mock_matrix = MockNeoPixelMatrix(width=32, height=8, direction=NeoPixelMatrix.HORIZONTAL, brightness=1.0)
 ```

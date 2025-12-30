@@ -3,7 +3,10 @@
 # Used with ESP32 and 8x32 WS2812b LED matrix
 # neopixel_matrix_async.py
 
-from neopixel_matrix import NeoPixelMatrix, Color
+# Not ideal but the quickest fix I could come up with
+try: from neopixel_matrix import NeoPixelMatrix, Color
+except ImportError: from micropython_neopixel_matrix.neopixel_matrix import NeoPixelMatrix, Color
+
 import uasyncio as asyncio
 import framebuf
 
@@ -22,9 +25,9 @@ class NeoPixelMatrixAsync(NeoPixelMatrix):
         await self._update_np_from_fb()
         self.np.write()
 
-    async def clear(self):
+    async def clear(self, refresh:bool=True):
         self.fill(self.bg_color)
-        await self.show()
+        if refresh: await self.show()
 
     async def text(self, string, x=0, y=0, color=Color.RED, center=False):
         super().text(string, x, y, color, center)

@@ -1,4 +1,7 @@
-from neopixel_matrix import NeoPixelMatrix
+# Not ideal but the quickest fix I could come up with
+try: from neopixel_matrix import NeoPixelMatrix, Color
+except ImportError: from micropython_neopixel_matrix.neopixel_matrix import NeoPixelMatrix, Color
+
 import uasyncio as asyncio
 
 import sys
